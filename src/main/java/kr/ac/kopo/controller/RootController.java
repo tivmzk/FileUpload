@@ -63,9 +63,9 @@ public class RootController {
 	@ResponseBody
 	@RequestMapping(value="/upload_ajax", method=RequestMethod.POST, produces="application/text;charset=utf8")
 	public String uploadAjax(Item item) {
-		
 		upload(item);
-		return String.format("%s:%s:%s", item.getTitle(), item.getFilename(), item.getFilecode());
+//		return String.format("%s:%s:%s", item.getTitle(), item.getFilename(), item.getFilecode());
+		return item.getFilecode();
 	}
 	
 	@GetMapping("/delete/{title}")

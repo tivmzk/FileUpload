@@ -8,40 +8,90 @@
 <title>메인</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script type="text/javascript">
+
+	function appendItem(title, filename, filecode){
+		if(!$("input[name='title']").val()){
+			alert('입력하세요');
+			return;
+		}
+		else if(!$("input[name='uploadFile']")[0].files[0]){
+			alert('입력하세요2');
+			return;
+		}
+		
+		const tr = $('<tr>');
+		const td_title = $('<td>').text(title);
+		const td_filename = $('<td>');
+		const td_delete = $('<td>');
+		
+		const a_filename = $('<a>')
+		.attr({'href':'upload/'+filecode, 'target':'_blank'})
+		.text(filename);
+		
+		const a_delete = $('<a>')
+		.attr('href', 'delete/'+title)
+		.text('삭제');
+		
+		td_filename.append(a_filename);
+		td_delete.append(a_delete);
+		
+		tr.append(td_title);
+		tr.append(td_filename);
+		tr.append(td_delete);
+		
+		$('#noitem').remove();
+		
+		$('tbody').append(tr);
+	}
+
 	$(function(){
-		const createItemElem = function(list) {
-			const tr = document.createElement('tr');
-			
-			const title = document.createElement('td');
-			title.textContent = list[0];
-			
-			const filename = document.createElement('td');
-			const a1 = document.createElement('a');
-			a1.href = `upload/\${list[2]}`;
-			a1.target = '_blank';
-			a1.textContent = list[1];
-			filename.appendChild(a1);
-			
-			const del = document.createElement('td');
-			const a2 = document.createElement('a');
-			a2.href = `delete/\${list[0]}`;
-			a2.textContent = '삭제';
-			del.appendChild(a2);
-			
-			let tdList = [title, filename, del];
-			
-			for(item of tdList){
-				tr.appendChild(item);
+		$('#list_code').click(function(){
+			if(!$("input[name='title']").val()){
+				alert('입력하세요');
+				return;
 			}
-			return tr;
-		};
-		const insertItem = function(item){
-			const list = item.split(':');
-			if(document.getElementById('noitem')){
-				document.getElementById('wrapper').removeChild(document.getElementById('noitem'));	
-			} 
-			document.getElementById('wrapper').appendChild(createItemElem(list));
-		};
+			else if(!$("input[name='uploadFile']")[0].files[0]){
+				alert('입력하세요2');
+				return;
+			}
+				
+			const title = $("input[name='title']").val();
+			const filename = $("input[name='uploadFile']")[0].files[0].name;
+			
+			const tr = $('<tr>');
+			const td_title = $('<td>').text(title);
+			const td_filename = $('<td>').text(filename);
+			const td_delete = $('<td>').text('삭제');
+			
+			
+			tr.append(td_title);
+			tr.append(td_filename);
+			tr.append(td_delete);
+			
+			$('#noitem').remove();
+			
+			$('tbody').append(tr);
+		});
+		
+		$('#list').click(function() {
+			const item = {
+					title:$('input[name="title"]').val(),
+					filename:$(`input[name='uploadFile']`)[0].files[0].name
+			}
+			console.log(inputItem.title, inputItem.filename);
+			
+			let html = `
+			<tr>
+				<td>\${inputItem.title}</td>
+				<td><a href="upload/" target="_blank">\${inputItem.filename}</a></td>
+				<td><a href="delete/\${inputItem.title}">삭제</a></td>
+			</tr>
+			`;
+			
+			console.log(html);
+			const tbody = $('tbody').html();
+			$('tbody').html(tbody+html);
+		});
 		
 		$('#upload').on('click', function() {
 
@@ -51,7 +101,6 @@
 			$.ajax('upload_ajax', {
 				type : 'POST',
 				enctype : 'multipart/form-data',
-				contentType: 'application/x-www-form-urlencoded; charset=euc-kr',
 				data : formData,
 				async : true,
 				cache : false,
@@ -59,7 +108,7 @@
 				contentType : false,
 				success : function(result) {
 					alert('업로드 성공');
-					insertItem(result);
+					appendItem(form.title.value, form.uploadFile.files[0].name, result);
 				},
 				error : function(xhr, status, err) {
 					alert('업로드 실패: ' + err);
@@ -81,7 +130,7 @@
 						<th>관리</th>
 					</tr>
 				</thead>
-				<tbody id="wrapper">
+				<tbody>
 					<c:if test="${list.size() < 1}">
 						<tr id="noitem">
 							<td colspan="3">등록된 이미지가 없습니다</td>
@@ -112,6 +161,12 @@
 		</div>
 		<div>
 			<button id="upload" type="button">[AJAX]등록</button>
+		</div>
+		<div>
+			<button id="list" type="button">[LIST_HTML]등록</button>
+		</div>
+		<div>
+			<button id="list_code" type="button">[LIST_CODE]등록</button>
 		</div>
 	</div>
 </body>
